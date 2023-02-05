@@ -43,9 +43,10 @@ export const getPostByIDCtrl = (req, res) => {
 export const deletePostCtrl = (req, res) => {
     try {
         // check if there is a token
-        const token = req.cookies.access_token
-        if (!token) return res.status(401).json('You are not authenticated!')
+        const headersToken = req.headers.token
+        if (!headersToken) return res.status(401).json('You are not authenticated!')
         // check token validity
+        const token = headersToken.split(' ')[1]
         jwt.verify(
             token,
             process.env.JWT_KEY,

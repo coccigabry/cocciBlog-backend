@@ -54,11 +54,8 @@ export const loginCtrl = (req, res) => {
                 if (!isPswCorrect) return res.status(400).json('Wrong credentials!')
                 //set jwt
                 const { password, ...other } = data[0]
-                const token = jwt.sign({ id: data[0].id }, process.env.JWT_KEY)
-                res.cookie('access_token', token, {
-                    httpOnly: true
-                })
-                res.status(200).json(other)
+                const token = jwt.sign({ id: data[0].id }, process.env.JWT_KEY, { expiresIn: '1d' })
+                res.status(200).json({ other, token })
             }
         )
     } catch (err) {
