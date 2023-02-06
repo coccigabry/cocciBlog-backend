@@ -1,5 +1,6 @@
 import express from "express";
-import { getPostsCtrl, getPostByIDCtrl, deletePostCtrl, /* addPostCtrl, updatePostCtrl */ } from "../controllers/posts.js";
+import { verifyToken } from '../utilities/verifyToken.js'
+import { getPostsCtrl, getPostByIDCtrl, deletePostCtrl, addPostCtrl, updatePostCtrl } from "../controllers/posts.js";
 
 
 const router = express.Router()
@@ -7,11 +8,11 @@ const router = express.Router()
 router.get('/', getPostsCtrl)
 router.get('/:id', getPostByIDCtrl)
 
-//router.post('/', addPostCtrl)
+router.post('/', verifyToken, addPostCtrl)
 
-router.delete('/:id', deletePostCtrl)
+router.delete('/:id', verifyToken, deletePostCtrl)
 
-//router.put('/:id ', updatePostCtrl)
+router.put('/:id ', verifyToken, updatePostCtrl)
 
 
 export default router

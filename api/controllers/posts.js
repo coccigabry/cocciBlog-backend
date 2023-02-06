@@ -1,5 +1,4 @@
 import { db } from '../../db.js'
-import jwt from 'jsonwebtoken'
 
 
 export const getPostsCtrl = (req, res) => {
@@ -22,7 +21,7 @@ export const getPostsCtrl = (req, res) => {
 
 export const getPostByIDCtrl = (req, res) => {
     try {
-        const query = 'SELECT `username`, users.img AS userImg, `title`, `desc`, posts.img, `cat`, `date` FROM users JOIN posts ON users.id = posts.user_id WHERE posts.id = ?'
+        const query = 'SELECT posts.id, `username`, users.img AS userImg, `title`, `desc`, posts.img, `cat`, `date` FROM users JOIN posts ON users.id = posts.user_id WHERE posts.id = ?'
         db.query(
             query,
             [req.params.id],
@@ -36,33 +35,26 @@ export const getPostByIDCtrl = (req, res) => {
     }
 }
 
-//export const addPostCtrl = (req, res) => {
-//
-//}
-
-export const deletePostCtrl = (req, res) => {
+export const addPostCtrl = (req, res) => {
     try {
-        // check if there is a token
-        const headersToken = req.headers.token
-        if (!headersToken) return res.status(401).json('You are not authenticated!')
-        // check token validity
-        const token = headersToken.split(' ')[1]
-        jwt.verify(
-            token,
-            process.env.JWT_KEY,
-            (err, userInfo) => {
-                if (err) return res.status(403).json('Token not valid!')
-                // delete post
-                const postId = req.params.id
-                const query = 'DELETE FROM posts WHERE id = ? AND user_id = ?'
-                db.query(
-                    query,
-                    [postId, userInfo.id],
-                    (err, data) => {
-                        if (err) return res.status(403).json('You are not allowed to perfom this action!')
-                        return res.status(200).json('Post deleted')
-                    }
-                )
+        const query = 'INSERT INTO posts(`id`, `title`, `desc`, `img`, `date`, `user_id`, `cat`) VALUES (NULL, ?)'
+        const values = [
+            req.body.title,
+            req.body.desc,
+            req.body.img,
+            req.body.date,
+            userInfo.id,
+            req.body.cat
+        ]
+        db.query(
+            query,
+            [values],
+            (err, data) => {
+                if (err) {
+                    console.log(err)
+                    return res.status(500).json(err)
+                }
+                return res.status(200).json(data)
             }
         )
     } catch (err) {
@@ -70,6 +62,43 @@ export const deletePostCtrl = (req, res) => {
     }
 }
 
-//export const updatePostCtrl = (req, res) => {
-//
-//}
+export const deletePostCtrl = (req, res) => {
+    try {
+        const postId = req.params.id
+        const query = 'DELETE FROM posts WHERE id = ? AND user_id = ?'
+        db.query(
+            query,
+            [postId, userInfo.id],
+            (err, data) => {
+                if (err) return res.status(403).json('You are not allowed to perfom this action!')
+                return res.status(200).json('Post deleted')
+            }
+        )
+    } catch (err) {
+        res.status(500).json(err)
+    }
+}
+
+export const updatePostCtrl = (req, res) => {
+    try {
+        const postId = req.params.id
+        const query = 'UPDATE posts SET `title`=?, `desc`=?, `img`=?, `cat`=? WHERE `id`=? AND `user_id`=?'
+        const values = [
+            req.body.title,
+            req.body.desc,
+            req.body.img,
+            req.body.cat
+        ]
+        db.query(
+            query,
+            [...values, postId, userInfo.id],
+            (err, data) => {
+                //if (err) return res.status(500).json(err)
+                if (err) console.log(err)
+                return res.status(200).json('Post updated')
+            }
+        )
+    } catch (err) {
+        res.status(500).json(err)
+    }
+}
